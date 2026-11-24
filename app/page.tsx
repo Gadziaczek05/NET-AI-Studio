@@ -28,7 +28,7 @@ export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("");
-  const [showProjects, setShowProjects] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);\n  const [creatingProject, setCreatingProject] = useState(false);
 
   useEffect(() => {
     try { const stored = localStorage.getItem("net-ai-projects"); if (stored) setProjects(JSON.parse(stored) as Project[]); }
@@ -47,15 +47,15 @@ export default function Home() {
     const name = (projectName.trim() || existing?.name || (prompt.trim().slice(0, 42)) || "Nowy projekt");
     const project: Project = { id: activeProjectId || crypto.randomUUID(), name, mode, content: answer, updatedAt: new Date().toISOString() };
     persistProjects([project, ...projects.filter((item) => item.id !== project.id)]);
-    setActiveProjectId(project.id); setProjectName(name); setShowProjects(true);
+    setActiveProjectId(project.id); setProjectName(name); setShowProjects(true); setCreatingProject(false);
   }
 
   function openProject(project: Project) {
-    setActiveProjectId(project.id); setProjectName(project.name); setMode(project.mode); setAnswer(project.content); setError(""); setTab("code");
+    setActiveProjectId(project.id); setProjectName(project.name); setMode(project.mode); setAnswer(project.content); setError(""); setTab("code"); setCreatingProject(false); setShowProjects(false);
   }
 
   function newProject() {
-    setActiveProjectId(null); setProjectName(""); setAnswer(""); setPrompt(""); setError(""); setHistory([]); setMode("app");
+    setActiveProjectId(null); setProjectName(""); setAnswer(""); setPrompt(""); setError(""); setHistory([]); setMode("app"); setShowProjects(false); setCreatingProject(true);
   }
   const htmlPreview = useMemo(() => {
     const value = cleanHtml(answer);
@@ -118,7 +118,9 @@ Wprowadź żądane zmiany i zwróć kompletną, zaktualizowaną wersję projektu
         <header className="topbar"><div className="breadcrumb">NET <span>/</span> Studio AI {activeProjectId && <><span>/</span> {projectName}</>}</div><div className="online"><span className="status-dot" /> PANEL AI</div></header>
         <div className="content">
           <div className="hero"><div className="eyebrow"><span className="spark">✦</span> TWOJE CENTRUM KREATYWNE</div><h1>Co dziś <span>tworzymy?</span></h1><p>Od pomysłu do kodu. Twórz aplikacje, strony internetowe, gry i wiele więcej z pomocą AI.</p></div>
-          <div className="mode-grid">{modes.map((item) => <button key={item.id} onClick={() => setMode(item.id)} className={mode === item.id ? "mode-card selected" : "mode-card"}><span className="mode-icon">{item.icon}</span><span className="mode-name">{item.label}</span><span className="mode-arrow">↗</span></button>)}</div>
+          {creatingProject && <section className="new-project-panel"><div><strong>Nowy projekt</strong><small>Podaj nazwę i opisz, co chcesz stworzyć. Projekt zapiszesz po wygenerowaniu pierwszego wyniku.</small></div><input aria-label="Nazwa nowego projektu" value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="Np. Moja aplikacja pogodowa" /><button type="button" onClick={() => { setCreatingProject(false); document.querySelector<HTMLTextAreaElement>(".composer textarea")?.focus(); }}>Przejdź do opisu projektu</button></section>}
+          {showProjects && <section className="projects-panel"><strong>Moje projekty</strong>{projects.length === 0 ? <p>Nie masz jeszcze zapisanych projektów. Utwórz nowy projekt i zapisz pierwszy wynik.</p> : projects.map((project) => <div className="project-row" key={project.id}><button className="project-open" onClick={() => openProject(project)}>{project.name}</button><span>{new Date(project.updatedAt).toLocaleDateString("pl-PL")}</span><button className="project-delete" aria-label="Usuń projekt" onClick={() => { if (confirm("Usunąć ten projekt?")) persistProjects(projects.filter((item) => item.id !== project.id)); }}>×</button></div>)}</section>}
+                    <div className="mode-grid">{modes.map((item) => <button key={item.id} onClick={() => setMode(item.id)} className={mode === item.id ? "mode-card selected" : "mode-card"}><span className="mode-icon">{item.icon}</span><span className="mode-name">{item.label}</span><span className="mode-arrow">↗</span></button>)}</div>
           <section className="composer">
             <div className="composer-head"><span className="composer-icon">{selected.icon}</span><div><strong>{selected.label}</strong><small>{selected.hint}</small></div><span className="model-tag">NET ENGINE</span></div>
             <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void submit(); } }} placeholder={selected.hint} />
