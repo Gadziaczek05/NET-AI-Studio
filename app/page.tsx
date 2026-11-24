@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 type Mode = "assistant" | "app" | "website" | "game" | "code";
-type Message = { role: "user" | "ai"; text: string };\ntype Project = { id: string; name: string; mode: Mode; content: string; updatedAt: string };
+type Message = { role: "user" | "ai"; text: string };
+type Project = { id: string; name: string; mode: Mode; content: string; updatedAt: string };
 const modes: { id: Mode; label: string; icon: string; hint: string }[] = [
   { id: "assistant", label: "Asystent", icon: "✦", hint: "Zapytaj o cokolwiek..." },
   { id: "app", label: "Aplikacja", icon: "▣", hint: "Opisz aplikację, którą mam stworzyć..." },
@@ -23,7 +24,39 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"code" | "preview">("code");
-  const [history, setHistory] = useState<Message[]>([]);\n  const [projects, setProjects] = useState<Project[]>([]);\n  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);\n  const [projectName, setProjectName] = useState("");\n  const [showProjects, setShowProjects] = useState(false);\n\n  useEffect(() => {\n    try { const stored = localStorage.getItem("net-ai-projects"); if (stored) setProjects(JSON.parse(stored) as Project[]); }\n    catch { setProjects([]); }\n  }, []);\n\n  function persistProjects(next: Project[]) {\n    setProjects(next);\n    try { localStorage.setItem("net-ai-projects", JSON.stringify(next)); }\n    catch { setError("Nie udało się zapisać projektu. Pamięć przeglądarki może być pełna."); }\n  }\n\n  function saveProject() {\n    if (!answer.trim()) return;\n    const existing = projects.find((item) => item.id === activeProjectId);\n    const name = (projectName.trim() || existing?.name || (prompt.trim().slice(0, 42)) || "Nowy projekt");\n    const project: Project = { id: activeProjectId || crypto.randomUUID(), name, mode, content: answer, updatedAt: new Date().toISOString() };\n    persistProjects([project, ...projects.filter((item) => item.id !== project.id)]);\n    setActiveProjectId(project.id); setProjectName(name); setShowProjects(true);\n  }\n\n  function openProject(project: Project) {\n    setActiveProjectId(project.id); setProjectName(project.name); setMode(project.mode); setAnswer(project.content); setError(""); setTab("code");\n  }\n\n  function newProject() {\n    setActiveProjectId(null); setProjectName(""); setAnswer(""); setPrompt(""); setError(""); setHistory([]); setMode("app");\n  }
+  const [history, setHistory] = useState<Message[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("");
+  const [showProjects, setShowProjects] = useState(false);
+
+  useEffect(() => {
+    try { const stored = localStorage.getItem("net-ai-projects"); if (stored) setProjects(JSON.parse(stored) as Project[]); }
+    catch { setProjects([]); }
+  }, []);
+
+  function persistProjects(next: Project[]) {
+    setProjects(next);
+    try { localStorage.setItem("net-ai-projects", JSON.stringify(next)); }
+    catch { setError("Nie udało się zapisać projektu. Pamięć przeglądarki może być pełna."); }
+  }
+
+  function saveProject() {
+    if (!answer.trim()) return;
+    const existing = projects.find((item) => item.id === activeProjectId);
+    const name = (projectName.trim() || existing?.name || (prompt.trim().slice(0, 42)) || "Nowy projekt");
+    const project: Project = { id: activeProjectId || crypto.randomUUID(), name, mode, content: answer, updatedAt: new Date().toISOString() };
+    persistProjects([project, ...projects.filter((item) => item.id !== project.id)]);
+    setActiveProjectId(project.id); setProjectName(name); setShowProjects(true);
+  }
+
+  function openProject(project: Project) {
+    setActiveProjectId(project.id); setProjectName(project.name); setMode(project.mode); setAnswer(project.content); setError(""); setTab("code");
+  }
+
+  function newProject() {
+    setActiveProjectId(null); setProjectName(""); setAnswer(""); setPrompt(""); setError(""); setHistory([]); setMode("app");
+  }
   const htmlPreview = useMemo(() => {
     const value = cleanHtml(answer);
     return /<html[\s>]|<!doctype html|<body[\s>]/i.test(value) ? value : "";
@@ -32,7 +65,14 @@ export default function Home() {
 
   async function submit() {
     if (!prompt.trim() || busy) return;
-    const current = prompt.trim();\n    const projectContext = activeProjectId && answer ? `\\n\\nAKTUALNY PROJEKT DO MODYFIKACJI:\\n${answer}\\n\\nWprowadź żądane zmiany i zwróć kompletną, zaktualizowaną wersję projektu.` : "";\n    const requestPrompt = current + projectContext;
+    const current = prompt.trim();
+    const projectContext = activeProjectId && answer ? `\
+\
+AKTUALNY PROJEKT DO MODYFIKACJI:\
+${answer}\
+\
+Wprowadź żądane zmiany i zwróć kompletną, zaktualizowaną wersję projektu.` : "";
+    const requestPrompt = current + projectContext;
     setPrompt("");
     setError("");
     setAnswer("");
@@ -67,7 +107,10 @@ export default function Home() {
         <a className="brand" href="#"><span className="brand-mark">N</span><span>NET<span className="brand-blue">.AI</span></span></a>
         <div className="side-label">WORKSPACE</div>
         <button className="side-link active"><span>✦</span> Studio AI</button>
-        <button className="side-link" onClick={newProject}><span>＋</span> Nowy projekt</button>\n        <button className="side-link" onClick={() => setShowProjects((value) => !value)}><span>▤</span> Moje projekty ({projects.length})</button>\n        {showProjects && <div className="project-list">{projects.map((project) => <div className="project-row" key={project.id}><button className="project-open" onClick={() => openProject(project)}>{project.name}</button><button className="project-delete" aria-label="Usuń projekt" onClick={() => { if (confirm("Usunąć ten projekt?")) { const next = projects.filter((item) => item.id !== project.id); persistProjects(next); if (activeProjectId === project.id) newProject(); } }}>×</button></div>)}</div>}\n        <div className="side-label second">NARZĘDZIA</div>
+        <button className="side-link" onClick={newProject}><span>＋</span> Nowy projekt</button>
+        <button className="side-link" onClick={() => setShowProjects((value) => !value)}><span>▤</span> Moje projekty ({projects.length})</button>
+        {showProjects && <div className="project-list">{projects.map((project) => <div className="project-row" key={project.id}><button className="project-open" onClick={() => openProject(project)}>{project.name}</button><button className="project-delete" aria-label="Usuń projekt" onClick={() => { if (confirm("Usunąć ten projekt?")) { const next = projects.filter((item) => item.id !== project.id); persistProjects(next); if (activeProjectId === project.id) newProject(); } }}>×</button></div>)}</div>}
+        <div className="side-label second">NARZĘDZIA</div>
         {modes.slice(1).map((item) => <button key={item.id} className={mode === item.id ? "side-link chosen" : "side-link"} onClick={() => setMode(item.id)}><span>{item.icon}</span>{item.label}</button>)}
         <div className="sidebar-bottom"><span className="status-dot" /> NET AI Studio <small>Wersja 2.0</small></div>
       </aside>
@@ -83,7 +126,8 @@ export default function Home() {
           </section>
           {busy && <div className="loading"><span className="loader" /> NET AI przygotowuje odpowiedź...</div>}
           {error && <div className="error-box" role="alert">{error}</div>}
-          {answer && <section className="output"><div className="output-head"><div><span className="output-dot" /> WYNIK GENEROWANIA</div><div className="output-actions"><button onClick={saveProject}>Zapisz projekt</button><button onClick={() => void copyAnswer()}>Kopiuj kod / tekst</button></div></div>\n            <div className="project-save-line"><input aria-label="Nazwa projektu" value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="Nazwa projektu (opcjonalnie)" /><span>{activeProjectId ? "Edytujesz zapisany projekt" : "Nowy projekt"}</span></div>
+          {answer && <section className="output"><div className="output-head"><div><span className="output-dot" /> WYNIK GENEROWANIA</div><div className="output-actions"><button onClick={saveProject}>Zapisz projekt</button><button onClick={() => void copyAnswer()}>Kopiuj kod / tekst</button></div></div>
+            <div className="project-save-line"><input aria-label="Nazwa projektu" value={projectName} onChange={(event) => setProjectName(event.target.value)} placeholder="Nazwa projektu (opcjonalnie)" /><span>{activeProjectId ? "Edytujesz zapisany projekt" : "Nowy projekt"}</span></div>
             {htmlPreview && <div className="tabs"><button className={tab === "code" ? "tab active-tab" : "tab"} onClick={() => setTab("code")}>Kod</button><button className={tab === "preview" ? "tab active-tab" : "tab"} onClick={() => setTab("preview")}>Podgląd</button></div>}
             {tab === "preview" && htmlPreview ? <iframe className="preview" title="Podgląd projektu" sandbox="allow-scripts" srcDoc={htmlPreview} /> : <pre className="answer">{answer}</pre>}
           </section>}
