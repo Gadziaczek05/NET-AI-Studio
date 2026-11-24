@@ -107,8 +107,8 @@ Wprowadź żądane zmiany i zwróć kompletną, zaktualizowaną wersję projektu
         <a className="brand" href="#"><span className="brand-mark">N</span><span>NET<span className="brand-blue">.AI</span></span></a>
         <div className="side-label">WORKSPACE</div>
         <button className="side-link active"><span>✦</span> Studio AI</button>
-        <button className="side-link" onClick={newProject}><span>＋</span> Nowy projekt</button>
-        <button className="side-link" onClick={() => setShowProjects((value) => !value)}><span>▤</span> Moje projekty ({projects.length})</button>
+        <button className="side-link project-nav" aria-label="Nowy projekt" title="Nowy projekt" onClick={newProject}><span>＋</span> Nowy projekt</button>
+        <button className="side-link project-nav" aria-label="Moje projekty" title="Moje projekty" onClick={() => setShowProjects((value) => !value)}><span>▤</span> Moje projekty ({projects.length})</button>
         {showProjects && <div className="project-list">{projects.map((project) => <div className="project-row" key={project.id}><button className="project-open" onClick={() => openProject(project)}>{project.name}</button><button className="project-delete" aria-label="Usuń projekt" onClick={() => { if (confirm("Usunąć ten projekt?")) { const next = projects.filter((item) => item.id !== project.id); persistProjects(next); if (activeProjectId === project.id) newProject(); } }}>×</button></div>)}</div>}
         <div className="side-label second">NARZĘDZIA</div>
         {modes.slice(1).map((item) => <button key={item.id} className={mode === item.id ? "side-link chosen" : "side-link"} onClick={() => setMode(item.id)}><span>{item.icon}</span>{item.label}</button>)}
