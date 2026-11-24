@@ -18,3 +18,11 @@ textarea{width:100%;min-height:112px;resize:vertical;background:#080f1b;border:1
 @media(max-width:390px){.content{padding-left:12px;padding-right:12px}.mode-grid{gap:7px}.mode-card{min-height:80px;padding:11px}.composer-foot{align-items:flex-end;gap:8px}.composer-foot>span{max-width:175px;line-height:1.5}}
 
 .project-list{margin:4px 0 10px 8px;padding-left:8px;border-left:1px solid #294361;max-height:210px;overflow:auto}.project-row{display:flex;align-items:center;gap:4px;margin:3px 0}.project-open{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;border:0;background:transparent;color:#91a8c5;padding:7px 5px;font-size:11px}.project-open:hover{color:#fff}.project-delete{border:0;background:transparent;color:#70839d;font-size:17px;padding:2px 6px}.project-delete:hover{color:#ff8e9a}.output-actions{display:flex;gap:7px}.project-save-line{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}.project-save-line input{min-width:0;flex:1;background:#080f1b;border:1px solid #1e3048;border-radius:7px;color:#edf4ff;padding:8px 10px;font-size:11px;outline:none}.project-save-line input:focus{border-color:#438ee9}.project-save-line span{color:#6f829c;font-size:10px;white-space:nowrap}@media(max-width:760px){.project-list{display:none}.output-actions{gap:4px}.output-head button{padding:7px 6px;font-size:9px}.project-save-line{align-items:flex-start;flex-direction:column}.project-save-line span{white-space:normal}}
+@media(max-width:760px){
+  .sidebar{position:relative;z-index:20;overflow:visible}
+  .sidebar .project-nav{display:flex!important;visibility:visible!important;opacity:1!important}
+  .sidebar .project-nav span{display:block!important;font-size:17px!important}
+  .sidebar .project-list{display:block;position:absolute;left:62px;top:175px;width:min(240px,calc(100vw - 90px));max-height:50vh;overflow:auto;padding:10px;background:#101b2c;border:1px solid #294361;border-radius:10px;box-shadow:0 12px 35px #0009;z-index:50}
+  .sidebar .project-row{display:flex}
+  .sidebar .project-open{font-size:12px}
+}
