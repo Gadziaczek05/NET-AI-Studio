@@ -28,7 +28,8 @@ export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("");
-  const [showProjects, setShowProjects] = useState(false);\n  const [creatingProject, setCreatingProject] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
+  const [creatingProject, setCreatingProject] = useState(false);
 
   useEffect(() => {
     try { const stored = localStorage.getItem("net-ai-projects"); if (stored) setProjects(JSON.parse(stored) as Project[]); }
